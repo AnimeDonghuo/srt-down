@@ -43,9 +43,13 @@ class BrowserManager:
         context = await self.browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
-        # Intercept advertisement popups or redirects and immediately close them
-        context.on("page", lambda p: asyncio.create_task(p.close()))
+        # 1. Create the main target page first
         page = await context.new_page()
+        
+        # 2. Register the listener AFTER the main page is opened.
+        # This ensures the listener only closes subsequent popups or advertisements.
+        context.on("page", lambda p: asyncio.create_task(p.close()))
+        
         return context, page
 
     async def get_safe_page(self):
